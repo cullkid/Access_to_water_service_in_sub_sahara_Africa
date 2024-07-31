@@ -16,5 +16,28 @@ SELECT
 FROM md_water_services.visits
 WHERE time_in_queue > 500;
 
-                              -- Maji_Ndogo_Part_1 Slides 17 & 18
+                              -- Maji_Ndogo_Part_2 Slides 10
+-- Let's first look at the number of records each employee collected. So find the correct table, figure out what function to use and how to group, order and limit the results to only see the top 3 employee_ids with the highest number of locations visited.
+SELECT 
+    assigned_employee_id,
+    COUNT(visit_count) AS visit_count
+FROM md_water_services.visits
+GROUP BY assigned_employee_id
+ORDER BY visit_count DESC
+LIMIT 3;
+
+-- Make a note of the top 3 assigned_employee_id and use them to create a query that looks up the employee's info. Since you're a pro at finding stuff in a database now, you can figure this one out. You should have a column of names, email addresses and phone numbers for our top dogs.
+SELECT 
+	assigned_employee_id,
+    employee_name,
+    phone_number,
+    email
+FROM md_water_services.employee
+WHERE assigned_employee_id = 1
+OR assigned_employee_id = 30
+OR assigned_employee_id = 34
+;
+
+
+
 

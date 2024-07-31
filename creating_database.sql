@@ -1156,7 +1156,7 @@ AND results = 'Clean'
 -- and switch it all together
 -- after then use update and asign it to the email
 UPDATE employee
-SET email = CONCAT(LOWER(REPLACE(employee_name, ' ', '.')),'@ndogowater.gov')
+SET email = CONCAT(LOWER(REPLACE(employee_name, ' ', '.')),'@ndogowater.gov');
 
 -- I picked up another bit we have to clean up. Often when databases are created and updated, or information is collected from different sources, errors creep in. For example, if you look at the phone numbers in the phone_number column, the values are stored as strings
 -- The phone numbers should be 12 characters long, consisting of the plus sign, area code (99), and the phone number digits. However, when we use the LENGTH(column) function, it returns 13 characters, indicating there's an extra character.
@@ -1180,7 +1180,7 @@ SELECT
 	town_name,
     COUNT(town_name) AS counted_town_name
 FROM md_water_services.employee
-GROUP BY town_name
+GROUP BY town_name;
 
 -- going on for the anaysis, we want to congratulation message to the top surveyor who did multiple visit during survey 
 -- first let's get the id of the employee_id who have the most visit count from visit table
@@ -1242,7 +1242,7 @@ GROUP BY location_type;
 
 -- We can see that there are more rural sources than urban, but it's really hard to understand those numbers. Percentages are more relatable.
 -- If we use SQL as a very overpowered calculator:
-SELECT 23740 / (15910 + 23740) * 100 AS rural_percentage
+SELECT 23740 / (15910 + 23740) * 100 AS rural_percentage;
 -- We can see that 60% of all water sources in the data set are in rural communities.
 -- So again, what are some of the insights we gained from the location table?
 -- 1. Our entire country was properly canvassed, and our dataset represents the situation on the ground.

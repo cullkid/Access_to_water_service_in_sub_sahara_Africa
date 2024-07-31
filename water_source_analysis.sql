@@ -72,13 +72,12 @@ GROUP BY type_of_water_source
 ORDER BY number_of_people_served_per_water_source ASC
 ;
 
-
+                                -- Maji_Ndogo_Part_2 Slides 20, 21
 -- It's a little hard to comprehend these numbers, but you can see that one of these is dominating. To make it a bit simpler to interpret, let's use percentages.
 -- First, we need the total number of citizens then use the result of that and divide each of the SUM(number_of_people_served) by that number, times 100, to get percentages.
 -- Make a note of the number of people surveyed in the first question we answered. I get a total of about 27 million citizens!
 -- Next, calculate the percentages using the total we just got and Having percentages with a bunch of decimals really doesn't help get the point across, does it?
-
-Let's round that off to 0 decimals, and order the results.
+-- Let's round that off to 0 decimals, and order the results.
 SELECT 
     type_of_water_source,
     ROUND((SUM(number_of_people_served) / 27628140 * 100)) AS number_of_people_served_per_water_source
@@ -86,6 +85,58 @@ FROM md_water_services.water_source
 GROUP BY type_of_water_source 
 ORDER BY number_of_people_served_per_water_source
 ;
+-- 43% of our people are using shared taps in their communities, and on average, we saw earlier, that 2000 people share one shared_tap.
+-- By adding tap_in_home and tap_in_home_broken together, we see that 31% of people have water infrastructure installed in their homes, but 45% (14/31) of these taps are not working! 
+-- This isn't the tap itself that is broken, but rather the infrastructure like treatment plants, reservoirs, pipes, and pumps that serve these homes that are broken.
+-- 18% of people are using wells. But only 4916 out of 17383 are clean = 28% (from last week).
+
+                                               -- Maji_Ndogo_Part_2 Slides 22, 23
+-- At some point, we will have to fix or improve all of the infrastructure, so we should start thinking about how we can make a data-driven decision how to do it.
+ -- I think a simple approach is to fix the things that affect most people first. 
+--  So let's write a query that ranks each type of source based  on how many people in total use it. 
+--  RANK() should tell you we are going to need a window function to do this, so let's think through the problem.
+-- We will need the following columns:
+-- - Type of sources -- Easy
+-- - Total people served grouped by the types -- We did that earlier, so that's easy too.
+-- - A rank based on the total people served, grouped by the types -- A little harder.
+-- But think about this: If someone has a tap in their home, they already have the best source available. Since we can’t do anything more to improve this, we should remove tap_in_home from the ranking before we continue.
+-- So use a window function on the total people served column, converting it into a rank.
+SELECT 
+    type_of_water_source,
+    SUM(number_of_people_served) AS number_of_people_served_per_water_source,
+    RANK() OVER (ORDER BY SUM(number_of_people_served) DESC) AS rank_
+FROM md_water_services.water_source
+GROUP BY type_of_water_source
+ORDER BY rank_;
+
+                             -- Maji_Ndogo_Part_2 Slides 23, 24
+-- Ok, so we should fix shared taps first, then wells, and so on. But the next question is, which shared taps or wells should be fixed first? We can use the same logic; the most used sources should really be fixed first.
+-- So create a query to do this, and keep these requirements in mind:
+-- 1. The sources within each type should be assigned a rank.
+-- 2. Limit the results to only improvable sources.
+-- 3. Think about how to partition, filter and order the results set.
+-- 4. Order the results to see the top of the list.
+WITH RankedSources AS (
+SELECT
+	source_id,
+	type_of_water_source,
+	number_of_people_served,
+	ROW_NUMBER() OVER (PARTITION BY type_of_water_source ORDER BY number_of_people_served DESC) AS rank_pririotize
+FROM md_water_services.water_source
+)
+SELECT
+    source_id,
+    type_of_water_source,
+    number_of_people_served,
+    rank_pririotize
+    FROM
+    RankedSources
+WHERE type_of_water_source != 'tap_in_home'
+ORDER BY number_of_people_served DESC,
+    type_of_water_source,
+    rank_pririotize DESC; 
+-- By using RANK() teams doing the repairs can use the value of rank to measure how many they have fixed, but what would be the benefits of using DENSE_RANK()?
+-- Maybe it is easier to explain to the engineers this way, or the priority feels a bit more natural?
 
 
 
